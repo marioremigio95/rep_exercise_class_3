@@ -1,10 +1,11 @@
 ---
-title: "Methods III: Replication Exercise 1, Field Experiments"
+title: 'Methods III: Replication Exercise 1, Field Experiments'
 author: "Mário Remígio"
 date: "15/04/2021"
-output: 
-   html_document:
-     df_print: paged
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -43,8 +44,6 @@ dplyr::glimpse(df)
 
 sex_self_balance <- summary(lm(data = df, formula = sex ~ treatment))
 
-glue::glue("The avarage difference is {round(sex_self_balance$coefficients[2,1], digits = 5)}")
-
 ```
 ```{r include=F}
 library(tidyverse)
@@ -65,7 +64,7 @@ glue::glue("The avarage difference is {round(sex_self_balance$coefficients[2,1],
 
 ##### __(b) Is this difference in (a) statistically significant using a t-test?__
 
-```{r}
+```{r echo = F}
 glue::glue("The t-test p-value is {round(sex_self_balance$coefficients[2,4], digits = 2)}. The difference is not statistically significant")
 
 ```
@@ -130,12 +129,8 @@ df <- readr::read_csv("data/Replication Data Class 3.csv") %>%
   ungroup()
 
 hh_size_civi_duty_balance <- summary(lm(data = df, hh_size ~ treatment))
-
-glue::glue("The t-test p-value is {round(hh_size_civi_duty_balance$coefficients[2,4] ,digits = 2)}. We don't have 'good evidence' to reject the null hypothesis. There is no statistical difference in household size between the control group and the civic duty group.")
-
-
 ```
-```{r echo = F}
+```{r include = F}
 df <- readr::read_csv("data/Replication Data Class 3.csv") %>% 
   select(hh_id, treatment, hh_size) %>% 
   filter(treatment %in% c("Control","Civic Duty")) %>% 
@@ -144,12 +139,38 @@ df <- readr::read_csv("data/Replication Data Class 3.csv") %>%
                    .fns = mean, na.rm = T)) %>% 
   ungroup()
 
-hh_size_civi_duty_balance <- summary(lm(data = df, hh_size ~ treatment))
+hh_size_civic_duty_balance <- summary(lm(data = df, hh_size ~ treatment))
+```
 
-glue::glue("The t-test p-value is {round(hh_size_civi_duty_balance$coefficients[2,4] ,digits = 2)}. We don't have 'good evidence' to reject the null hypothesis. There is no statistical difference in household size between the control group and the civic duty group.")
 
+```{r echo = F}
+glue::glue("The t-test p-value is {round(hh_size_civic_duty_balance$coefficients[2,4] ,digits = 2)}. We don't have 'good evidence' to reject the null hypothesis. There is no statistical difference in household size between the control group and the civic duty group.")
+```
+
+#### __6. Assumption (3): What is the risk of spillovers (violations of SUTVA) from treatment?__
+
+#### __7. Assumption (4): Is there a risk of any ‘parallel’ treatment that violates the excludability assumption?__
+
+#### __8. Returning to the individual level data, perform a simple difference-in-means t-test for voter turnout between the ‘Control’ and ‘Neighbors’ groups in the individual data. Interpret the result and compare them to the findings in Table 2 of GGL.__
+
+```{r eval = F}
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  filter(treatment %in% c("Control", "Neighbors"))
+
+voted_neighbors_balance <- summary(lm(data = df, voted ~ treatment))
+```
+```{r include = F}
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  filter(treatment %in% c("Control", "Neighbors"))
+
+voted_neighbors_balance <- summary(lm(data = df, voted ~ treatment))
+
+```
+```{r echo = F}
+glue::glue("The estimated coefficient of the effect of being in the 'Neighbors' group relative to the control group is {round(voted_neighbors_balance$coefficients[2,1], digits = 3)}. Also, the p-value of the t-test is {round(voted_neighbors_balance$coefficients[2,4], digits = 220)}, that is, zero. In that sense, we are driven to say that being in the 'Neighbors' group increases the turnout in 8.1 p.p. relatively to being in the control group. The paper's Table 2 shows us that the turnout in the 'Neighbors' group was 37.8% against 29.7% in the control group. The difference between these values is exactly of {37.8 - 29.7} p.p. as expected")
 
 ```
 
+#### __9. GGL also run an OLS regression to understand the effect of each treatment on voter turnout. Table 3, column (a), shows the simple regression of treatment on turnout with no adjustments or controls. Run this regression and compare it to the findings in GGL. (Note: The authors include a series of dummies for each treatment condition, but this is equivalent to including the treatment variable as a factor variable with ‘Control’ as the first (baseline) level.) Interpret the results.__
 
 
