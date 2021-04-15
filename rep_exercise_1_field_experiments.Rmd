@@ -1,0 +1,155 @@
+---
+title: "Methods III: Replication Exercise 1, Field Experiments"
+author: "Mário Remígio"
+date: "15/04/2021"
+output: 
+   html_document:
+     df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#### __1. What hypotheses are GGL testing? Where did they get these hypotheses from?__
+
+#### __2. What are the treatment and control conditions? What is the outcome variable?__
+
+
+A household qualified to vote in the US elections was in the treatment group if it was randomly assigned to receive a mail 11 days before the elections with some degree of "social pressure" to vote in its content. Each household in the treatment group received one of four possible mailings that varied in its social pressure content. 
+
+The control group was the remaining households in the sample, that is, those randomly assigned not to receive any mail.
+
+The outcome variable is voter turnout in Michigan state's 2006 primary elections.
+
+
+#### __3. What is the unit of analysis? What is the level at which treatment is applied?__
+
+The unit of analysis is the individual voter despite the treatment been applied at the household level.
+
+#### __5. Assumption (2): What evidence do they provide that randomization produced balance on potential outcomes: Answer the questions below.__
+
+
+
+##### __(a) Assess the balance of individuals’ age between the Control and ‘Self’ treatment. What is the average difference in age between the two groups?__
+
+```{r eval=F}
+library(tidyverse)
+
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% filter(treatment %in% c("Self", "Control"))
+
+dplyr::glimpse(df)
+
+sex_self_balance <- summary(lm(data = df, formula = sex ~ treatment))
+
+glue::glue("The avarage difference is {round(sex_self_balance$coefficients[2,1], digits = 5)}")
+
+```
+```{r include=F}
+library(tidyverse)
+
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% filter(treatment %in% c("Self", "Control"))
+
+dplyr::glimpse(df)
+
+sex_self_balance <- summary(lm(data = df, formula = sex ~ treatment))
+
+```
+```{r echo = F }
+glue::glue("The avarage difference is {round(sex_self_balance$coefficients[2,1], digits = 5)}")
+
+```
+
+
+
+##### __(b) Is this difference in (a) statistically significant using a t-test?__
+
+```{r}
+glue::glue("The t-test p-value is {round(sex_self_balance$coefficients[2,4], digits = 2)}. The difference is not statistically significant")
+
+```
+
+##### __(c) To assess balance in their paper, GGL first aggregate the data to household level averages. Create a new household-level dataset by averaging the reported household size of each household.__
+
+```{r eval = F}
+
+readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T))
+
+```
+
+```{r echo = F}
+
+readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T))
+
+```
+
+##### __(d) In the household-level dataset, calculate the average Household Size in each control/treatment condition to replicate the first line of Table 1 in GGL (2008).__
+
+```{r eval = F}
+readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  select(hh_id, treatment, hh_size) %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T)) %>%
+  group_by(treatment) %>% 
+  summarise(mean_hh_size = mean(hh_size, na.rm = T)) %>%
+  pivot_wider(names_from = treatment, values_from = mean_hh_size)
+  
+
+```
+
+```{r echo = F}
+readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  select(hh_id, treatment, hh_size) %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T)) %>%
+  group_by(treatment) %>% 
+  summarise(mean_hh_size = mean(hh_size, na.rm = T)) %>%
+  pivot_wider(names_from = treatment, values_from = mean_hh_size)
+  
+```
+
+
+
+##### __(e) GGL do not bother to run a t-test, but let’s run one between the ‘Control’ and ‘Civic Duty’ conditions. Interpret the result.__
+```{r eval = F}
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  select(hh_id, treatment, hh_size) %>% 
+  filter(treatment %in% c("Control","Civic Duty")) %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T)) %>% 
+  ungroup()
+
+hh_size_civi_duty_balance <- summary(lm(data = df, hh_size ~ treatment))
+
+glue::glue("The t-test p-value is {round(hh_size_civi_duty_balance$coefficients[2,4] ,digits = 2)}. We don't have 'good evidence' to reject the null hypothesis. There is no statistical difference in household size between the control group and the civic duty group.")
+
+
+```
+```{r echo = F}
+df <- readr::read_csv("data/Replication Data Class 3.csv") %>% 
+  select(hh_id, treatment, hh_size) %>% 
+  filter(treatment %in% c("Control","Civic Duty")) %>% 
+  group_by(hh_id, treatment) %>% 
+  summarise(across(.cols = where(is.numeric),
+                   .fns = mean, na.rm = T)) %>% 
+  ungroup()
+
+hh_size_civi_duty_balance <- summary(lm(data = df, hh_size ~ treatment))
+
+glue::glue("The t-test p-value is {round(hh_size_civi_duty_balance$coefficients[2,4] ,digits = 2)}. We don't have 'good evidence' to reject the null hypothesis. There is no statistical difference in household size between the control group and the civic duty group.")
+
+
+```
+
+
+
